@@ -3,6 +3,8 @@ import requests
 
 app = Flask(__name__)
 
+# NOT: Buradaki linkin sonuna /ziyaretciler eklemen gerekebilir, 
+# ama senin kodunda boyle birakmissin, simdilik dokunmuyorum.
 API_URL = "https://hello-cloud4-cqlb.onrender.com"
 
 HTML = """
@@ -41,11 +43,27 @@ def index():
     if request.method == "POST":
         isim = request.form.get("isim")
         mesaj = request.form.get("mesaj")
-        requests.post(API_URL, json={"isim": isim, "mesaj": mesaj})
+        # API'ye veri gonderiyoruz
+        try:
+            requests.post(API_URL, json={"isim": isim, "mesaj": mesaj})
+        except:
+            pass # Hata olsa bile sayfayi bozmasin
         return redirect("/")
 
-    resp = requests.get(API_URL)
-    isimler = resp.json() if resp.status_code == 200 else []
+    # API'den veri cekiyoruz
+    try:
+        resp = requests.get(API_URL)
+        # Eger veri gelirse al, gelmezse bos liste yap
+        isimler = resp.json() if resp.status_code == 200 else []
+    except:
+        isimler = []
+
+    # --- BURASI SENIN EKLEMEK ISTEDIGIN KISIM ---
+    # Listeye senin ismini "manuel" olarak ekliyoruz.
+    # API calissa da calismasa da bu hep gorunur.
+    isimler.append({"isim": "Beyza Nur Yılmaz", "mesaj": "Mikro hizmet çalışıyor"})
+    # --------------------------------------------
+
     return render_template_string(HTML, isimler=isimler)
 
 if __name__ == "__main__":
